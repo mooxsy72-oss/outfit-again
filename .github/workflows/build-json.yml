@@ -1,1 +1,51 @@
+name: Собрать JSON нарядов
 
+# Запускается при любом изменении в репозитории,
+# плюс кнопка ручного запуска во вкладке Actions.
+# Фильтра по папкам нет намеренно: так надёжнее, а лишние запуски
+# ничего не стоят — если менять нечего, робот сразу заканчивает.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Разрешаем экшену коммитить обратно в репозиторий и публиковать Pages
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Пересобрать outfits.json и undressed.json
+        run: node scripts/build-json.js
+
+      - name: Закоммитить изменения
+        run: |
+          git config user.name  "outfits-bot"
+          git config user.email "actions@github.com"
+          # Добавляем по одному: git add падает целиком, если файла нет
+          git add outfits.json || true
+          git add undressed.json || true
+          git add TODO.md || true
+          if git diff --staged --quiet; then
+            echo "Изменений нет"
+          else
+            git commit -m "Автообновление списка нарядов"
+            git push
+            echo "Запрашиваем публикацию сайта"
+            # Коммит от робота сам по себе не будит GitHub Pages,
+            # поэтому просим пересобрать сайт явно.
+            curl -s -X POST \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pages/builds"
+          fi
