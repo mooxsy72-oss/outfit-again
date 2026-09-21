@@ -179,11 +179,35 @@ const existingOutfits = readJson(OUTFITS_JSON, []);
 const knownIds = new Set(existingOutfits.map(o => Number(o.id)));
 
 const added = [];
+const replaced = [];
+const retagged = [];
 const needsReview = [];
 const unknownCats = new Set();
 
 for (const [id, info] of [...bases].sort((a, b) => a[0] - b[0])) {
-  if (knownIds.has(id)) continue; // уже описан — не трогаем
+  if (knownIds.has(id)) {
+    // Наряд уже есть. Если его картинка лежит здесь, в images/, —
+    // значит это замена: перенаправляем путь на новый файл.
+    // Категорию и пол не трогаем, они остаются как были.
+    const entry = existingOutfits.find(o => Number(o.id) === id);
+    const txtName = info.file.replace(IMAGE_EXT, '.txt');
+    const newImg = BASE_URL + info.file;
+
+    let changed = false;
+    if (entry.img !== newImg) {
+      entry.img = newImg;
+      changed = true;
+    }
+    if (txtFiles.has(txtName.toLowerCase())) {
+      const newPrompt = BASE_URL + txtName;
+      if (entry.prompt !== newPrompt) {
+        entry.prompt = newPrompt;
+        changed = true;
+      }
+    }
+    if (changed) replaced.push(id);
+    continue;
+  }
 
   const txtName = info.file.replace(IMAGE_EXT, '.txt');
   const hasTxt = txtFiles.has(txtName.toLowerCase());
@@ -199,7 +223,7 @@ for (const [id, info] of [...bases].sort((a, b) => a[0] - b[0])) {
   const gotGender = info.gender || fromTags.gender || fromPrompt.gender;
 
   if (!KNOWN_CATEGORIES.includes(category)) unknownCats.add(category);
-  if (!gotCategory || !gotGender) needsReview.push(id);
+  if (!gotCategory) needsReview.push(id);
 
   const entry = {
     id,
@@ -212,6 +236,45 @@ for (const [id, info] of [...bases].sort((a, b) => a[0] - b[0])) {
   existingOutfits.push(entry);
   added.push(id);
 }
+
+// ── Явные теги применяются и к уже добавленным нарядам ──
+// Если номер записан в tags.txt (или теги стоят в имени файла / шапке
+// промпта), категория и пол обновятся, даже если наряд уже был в списке.
+// Наряды, которых нет в tags.txt, не трогаем — ручные правки сохраняются.
+function explicitTagsFor(id) {
+  const info = bases.get(id) || {};
+  const fromTags = tagsFromFile.get(id) || {};
+  let fromPrompt = {};
+  if (info.file) {
+    const txtName = info.file.replace(IMAGE_EXT, '.txt');
+    if (txtFiles.has(txtName.toLowerCase())) {
+      fromPrompt = readPromptTags(path.join(IMAGES_DIR, txtName)) || {};
+    }
+  }
+  return {
+    category: info.category || fromTags.category || fromPrompt.category,
+    gender: info.gender || fromTags.gender || fromPrompt.gender
+  };
+}
+
+for (const entry of existingOutfits) {
+  const id = Number(entry.id);
+  const t = explicitTagsFor(id);
+  let changed = false;
+  if (t.category && entry.category !== t.category) {
+    entry.category = t.category;
+    changed = true;
+  }
+  if (t.gender && entry.gender !== t.gender) {
+    entry.gender = t.gender;
+    changed = true;
+  }
+  if (t.category && !KNOWN_CATEGORIES.includes(t.category)) unknownCats.add(t.category);
+  if (changed && !added.includes(id)) retagged.push(id);
+}
+
+// Номера в tags.txt, которых нет в списке этого репозитория
+const tagsForMissing = [...tagsFromFile.keys()].filter(id => !knownIds.has(id) && !bases.has(id));
 
 // ── Собираем undressed.json ────────────────────────────────
 // Пересобираем целиком: ступени однозначно определяются файлами,
@@ -248,15 +311,33 @@ fs.writeFileSync(
 // ── Отчёт ──────────────────────────────────────────────────
 console.log(`Нарядов всего:        ${existingOutfits.length}`);
 console.log(`Новых добавлено:      ${added.length}${added.length ? ' → ' + added.join(', ') : ''}`);
+console.log(`Заменено картинок:    ${replaced.length}${replaced.length ? ' → ' + replaced.join(', ') : ''}`);
+console.log(`Обновлены теги:       ${retagged.length}${retagged.length ? ' → ' + retagged.join(', ') : ''}`);
+if (tagsForMissing.length) {
+  console.log(`\nВ tags.txt есть номера, которых нет в этом репо (проигнорированы): ${tagsForMissing.join(', ')}`);
+}
 console.log(`Ступеней раздевалки:  ${undressed.length} (у ${stages.size} нарядов)`);
 
-if (needsReview.length) {
-  console.log(`\nБез категории/пола (проставлено по умолчанию): ${needsReview.join(', ')}`);
+// TODO.md — живой список: новые без категории добавляются,
+// а те, кому вы дописали теги, убираются сами.
+const todoPrev = fs.existsSync('TODO.md')
+  ? [...fs.readFileSync('TODO.md', 'utf8').matchAll(/^- \[ \] (\d+)/gm)].map(m => Number(m[1]))
+  : [];
+const todo = [...new Set([...todoPrev, ...needsReview])]
+  .filter(id => !explicitTagsFor(id).category)
+  .filter(id => existingOutfits.some(o => Number(o.id) === id))
+  .sort((a, b) => a - b);
+
+if (todo.length) {
+  console.log(`\nБез категории (стоит «Разное» по умолчанию): ${todo.join(', ')}`);
   fs.writeFileSync(
     'TODO.md',
-    '# Нужно проставить категорию и пол\n\n' +
-    needsReview.map(id => `- [ ] ${id}`).join('\n') + '\n'
+    '# Нужно проставить категорию\n\n' +
+    'Допишите эти номера в tags.txt — они уберутся отсюда сами.\n\n' +
+    todo.map(id => `- [ ] ${id}`).join('\n') + '\n'
   );
+} else if (fs.existsSync('TODO.md')) {
+  fs.unlinkSync('TODO.md');
 }
 if (unknownCats.size) {
   console.log(`\nВНИМАНИЕ: категории без кнопки в index.html: ${[...unknownCats].join(', ')}`);
