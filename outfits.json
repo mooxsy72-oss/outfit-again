@@ -64,10 +64,10 @@
   {"id":782,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/782.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/782.txt","category":"modern","gender":"female"},
   {"id":783,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/783.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/783.txt","category":"osen","gender":"female"},
   {"id":784,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/784.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/784.txt","category":"modern","gender":"female"},
-  {"id":785,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/785.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/785.txt","category":"fantasy","gender":"female"},
-  {"id":786,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/786.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/786.txt","category":"fantasy","gender":"female"},
-  {"id":787,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/787.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/787.txt","category":"fantasy","gender":"female"},
-  {"id":788,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/788.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/788.txt","category":"fantasy","gender":"female"},
-  {"id":789,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/789.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/789.txt","category":"fantasy","gender":"female"},
-  {"id":790,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/790.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/790.txt","category":"fantasy","gender":"female"}
+  {"id":785,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/785.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/785.txt","category":"osen","gender":"male"},
+  {"id":786,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/786.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/786.txt","category":"ofis","gender":"male"},
+  {"id":787,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/787.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/787.txt","category":"modern","gender":"male"},
+  {"id":788,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/788.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/788.txt","category":"ofis","gender":"male"},
+  {"id":789,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/789.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/789.txt","category":"ofis","gender":"male"},
+  {"id":790,"title":"","img":"https://mooxsy72-oss.github.io/outfit-again/images/790.png","prompt":"https://mooxsy72-oss.github.io/outfit-again/images/790.txt","category":"summer","gender":"male"}
 ]
