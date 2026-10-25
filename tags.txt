@@ -19,10 +19,10 @@
 741 modern ж
 742 osen ж
 743 osen ж
-744 osen ж
+744 зима ж
 745 modern ж
 746 elegant ж
-747 osen ж
+747 зима ж
 748 sport ж
 749 sport ж
 750 sport ж
@@ -88,10 +88,10 @@
 810 pyjamas ж
 811 osen ж
 812 modern ж
-813 osen ж
+813 зима ж
 814 osen ж
 815 osen ж
-816 osen ж
+816 зима ж
 817 osen ж
 818 modern ж
 819 elegant ж
